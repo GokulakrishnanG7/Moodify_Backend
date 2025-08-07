@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: moodify-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python api.py
+    region: oregon
+    branch: main
+    repo: https://github.com/GokulakrishnanG7/Moodify_Backend

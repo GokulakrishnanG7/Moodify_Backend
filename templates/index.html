@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moodify 2.0 - Emotion Reactor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Share+Tech+Mono&display=swap');
+
+    /* Splash screen styles */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #splash img {
+      width: 300px;
+      height: auto;
+      animation: fadeInOut 3s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.95); }
+      10% { opacity: 1; transform: scale(1); }
+      90% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.05); }
+    }
+
+    :root {
+      --bg-overlay: '';
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Share Tech Mono', monospace;
+      color: #00ffcc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle, #0f0f0f 0%, #1a1a1a 100%);
+      transition: background 1.2s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: var(--bg-overlay);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      opacity: 0.1;
+      z-index: -1;
+      animation: floatAnim 30s linear infinite;
+      pointer-events: none;
+      filter: brightness(1.2) contrast(1.2);
+    }
+
+    @keyframes floatAnim {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-30px); }
+      100% { transform: translateY(0); }
+    }
+
+    .container {
+      text-align: center;
+      max-width: 850px;
+      padding: 50px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #00ffcc;
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(0, 255, 204, 0.4), 0 0 25px rgba(0, 255, 204, 0.2) inset;
+      backdrop-filter: blur(25px);
+      animation: fadeIn 1.8s ease-out;
+      display: none;
+    }
+
+    h1 {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      color: #00ffe7;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 15px #00ffe7, 0 0 30px #00ffe7;
+      letter-spacing: 2px;
+    }
+
+    p {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+      color: #ffffffcc;
+    }
+
+    button {
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      border: none;
+      padding: 15px 45px;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 15px #8e2de2;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      transform: scale(1.1);
+      box-shadow: 0 0 25px #8e2de2;
+    }
+
+    .output-box {
+      margin-top: 30px;
+      padding: 25px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 255, 204, 0.4);
+      color: #ffffffee;
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+
+    .control-buttons {
+      margin-top: 25px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .assistant-box {
+      margin-top: 20px;
+      padding: 15px 25px;
+      max-width: 700px;
+      text-align: center;
+      font-size: 1.1rem;
+      color: #00ffe7;
+      background-color: rgba(0, 0, 0, 0.65);
+      border: 1px solid #00ffe7;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+      font-family: 'Share Tech Mono', monospace;
+      backdrop-filter: blur(15px);
+      animation: fadeIn 1.2s ease-out;
+      display: none;
+    }
+
+    .language-selector {
+      margin-bottom: 25px;
+      font-size: 1rem;
+      color: #00ffe7;
+    }
+
+    .language-selector select {
+      padding: 8px 15px;
+      border-radius: 25px;
+      background-color: #111;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .language-selector select:hover {
+      box-shadow: 0 0 10px #00ffe7;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="static/logo/logo.png" alt="Moodify Logo">
+  </div>
+
+  <!-- Main Container -->
+  <div class="container" id="mainContainer">
+    <h1 id="mainTitle">Moodify 2.0</h1>
+    <p id="subtext">Let your face unlock a story hidden in your heart.<br>Tap below to begin your Emotion Journey.</p>
+
+    <!-- 🌐 Language Selector -->
+    <div class="language-selector">
+      <label for="languageSelect">🌐 Select Language:</label>
+      <select id="languageSelect">
+        <option value="en-US">English</option>
+        <option value="ta-IN">Tamil</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="te-IN">Telugu</option>
+        <option value="ml-IN">Malayalam</option>
+        <option value="de-DE">German</option>
+        <option value="fr-FR">French</option>
+        <option value="ja-JP">Japanese</option>
+        <option value="zh-CN">Chinese</option>
+        <option value="es-ES">Spanish</option>
+      </select>
+    </div>
+
+    <!-- Main Buttons (No Design Change) -->
+    <button id="startBtn" onclick="startMoodify()">Start Emotion Detection</button>
+    <div class="control-buttons">
+      <button id="detectBtn" onclick="startMoodify()">Detect Again</button>
+      <button id="stopBtn" onclick="stopMusic()">Stop Music</button>
+    </div>
+
+    <div class="output-box" id="output">
+      <p id="emotion"></p>
+      <p id="story"></p>
+    </div>
+  </div>
+
+  <div id="assistantBox" class="assistant-box"></div>
+
+  <audio id="player" autoplay hidden>
+    <source id="audioSource" src="" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <script>
+    // Splash screen timeout
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("splash").style.display = "none";
+        document.getElementById("mainContainer").style.display = "block";
+      }, 3000);
+    });
+  
+    function changeBackgroundByEmotion(emotion) {
+      const overlayPath = `/static/bg/${emotion}.svg`;
+  
+      const emotionThemes = {
+        happy: 'radial-gradient(circle at center, #11B2BC,#1180BC)',
+        sad: 'linear-gradient(to top, #1f1c2c, #928dab)',
+        angry: 'linear-gradient(to right, #ff0844,#CE1212)',
+        neutral: 'linear-gradient(to top, #bdc3c7, #2c3e50)',
+        fear: 'linear-gradient(to top, #000428, #004e92)',
+        surprise: 'linear-gradient(to top, #f7971e, #ffd200)',
+        disgust: 'linear-gradient(to top, #a8e063, #56ab2f)',
+      };
+  
+      document.body.style.background = emotionThemes[emotion] || 'radial-gradient(circle, #0f0f0f 0%, #1a1a1a 100%)';
+      document.body.style.setProperty('--bg-overlay', `url(${overlayPath})`);
+    }
+  
+    function getLangKey() {
+      const fullLang = document.getElementById("languageSelect").value || 'en-US';
+      return fullLang.split("-")[0];
+    }
+  
+    function getVoiceLang() {
+      return document.getElementById("languageSelect").value || 'en-US';
+    }
+  
+    const translations = {
+      en: {
+        title: "Moodify 2.0",
+        subtext: "Let your face unlock a story hidden in your heart.<br>Tap below to begin your Emotion Journey.",
+        start: "Start Emotion Detection",
+        detect: "Detect Again",
+        stop: "Stop Music",
+        assistant: {
+          happy: "You're glowing today! Want a cheerful beat?",
+          sad: "I'm here with you. Let's find peace together 💙",
+          angry: "Deep breath pal. Let's calm the storm.",
+          fear: "Courage isn't the absence of fear, it's acting despite it.",
+          surprise: "Whoa! Didn't expect that? Neither did I!",
+          neutral: "Staying chill... Want a soft background vibe?",
+          disgust: "Let’s purify this moment with calm.",
+        }
+      },
+      ta: {
+        title: "மூடிபை 2.0",
+        subtext: "உங்கள் முகம் உங்கள் உள்ளத்தின் கதையை வெளிக்கொணளும்.<br>தொடங்க கீழே தட்டவும்.",
+        start: "உணர்வு கண்டறிதலை தொடங்கு",
+        detect: "மீண்டும் கண்டறி",
+        stop: "இசையை நிறுத்து",
+        assistant: {
+          happy: "இன்று உன்னுடைய முகம் ஒளிர்கிறது! மகிழ்ச்சி பீட் வேண்டுமா?",
+          sad: "நான் உங்களுடன் இருக்கிறேன். அமைதியை தேடுவோம் 💙",
+          angry: "ஆழ்ந்த மூச்சு எடுக்கவும். கோபத்தை சமாளிக்கலாம்.",
+          fear: "தைரியம் என்பது பயம் இல்லாததல்ல, அதை எதிர்கொள்வதுதான்.",
+          surprise: "அப்படியா! எதிர்பார்க்கவில்லை!",
+          neutral: "சாந்தமாக இருக்கிறோம்... மென்மையான இசையா?",
+          disgust: "இந்த தருணத்தை நிம்மதியாக மாற்றுவோம்."
+        }
+      },
+      hi: {
+        title: "मूडिफाय 2.0",
+        subtext: "आपका चेहरा आपके दिल की कहानी बताएगा।<br>शुरू करने के लिए नीचे टैप करें।",
+        start: "भावनाओं की पहचान शुरू करें",
+        detect: "फिर से पहचानें",
+        stop: "संगीत रोकें",
+        assistant: {
+          happy: "आज तुम खिल रहे हो! खुश म्यूजिक सुनें?",
+          sad: "मैं तुम्हारे साथ हूँ। चलो शांति पाते हैं 💙",
+          angry: "गहरी साँस लो। गुस्से को शांत करें।",
+          fear: "साहस डर की अनुपस्थिति नहीं है, उसके बावजूद करना है।",
+          surprise: "ओह! ये नहीं सोचा था! मैं भी नहीं।",
+          neutral: "शांत हैं... सॉफ्ट म्यूजिक चाहिए?",
+          disgust: "इस पल को सुकून में बदलते हैं।"
+        }
+      },
+      // 🟡 Add more: te, ml, de, fr, ja, zh, es
+      te: {
+      title: "మూడిఫై 2.0",
+      subtext: "మీ ముఖం మీ మనసులోని కథను చెప్పుతుంది.<br>తదుపరి ప్రయాణం మొదలుపెట్టండి.",
+      start: "భావ వ్యక్తీకరణను ప్రారంభించండి",
+      detect: "మళ్లీ గుర్తించు",
+      stop: "సంగీతం ఆపు",
+      assistant: {
+        happy: "మీరు వెలిగిపోతున్నారు! ఉత్సాహభరితమైన సంగీతం వినాలా?",
+        sad: "నేను మీతోనే ఉన్నాను. మనం శాంతిని కనుగొనదాం 💙",
+        angry: "ఆ లోతైన శ్వాస తీసుకోండి. మనం కోపాన్ని అదుపు చేద్దాం.",
+        fear: "ధైర్యం అంటే భయం లేనిదే కాదు, దాన్ని అధిగమించడమే.",
+        surprise: "అదా! నేను ఊహించలేదు!",
+        neutral: "ఓకే... ఓ మెలోడి పాట బాగుంటుందా?",
+        disgust: "ఈ క్షణాన్ని శాంతంగా మార్చుకుందాం."
+      }
+    },
+    ml: {
+      title: "മൂഡിഫൈ 2.0",
+      subtext: "നിന്റെ മുഖം നിന്റെ ഹൃദയത്തിന്റെ കഥ പറയുന്നു.<br>തുടങ്ങാൻ താഴ്ചയിൽ ടാപ്പ് ചെയ്യുക.",
+      start: "ഭാവം തിരിച്ചറിയൽ തുടങ്ങുക",
+      detect: "വീണ്ടും തിരിച്ചറിയുക",
+      stop: "സംഗീതം നിർത്തുക",
+      assistant: {
+        happy: "നീ ഇന്ന് പ്രകാശിക്കുന്നു! സന്തോഷം പങ്കുവെക്കാനോ?",
+        sad: "ഞാൻ നിന്നോടൊപ്പം തന്നെ. നമുക്ക് സമാധാനം കണ്ടെത്താം 💙",
+        angry: "ആഴമായ ശ്വാസം എടുക്കൂ. കോപം കുറയ്ക്കാം.",
+        fear: "ധൈര്യം എന്നത് ഭയം ഇല്ലാതാകൽ അല്ല, അതിനെ നേരിടലാണ്.",
+        surprise: "അടേ! ഞാൻ പ്രതീക്ഷിച്ചില്ല!",
+        neutral: "നമുക്ക് ശാന്തമായ സംഗീതം വേണമോ?",
+        disgust: "ഈ നിമിഷം ത്യജിച്ച് പുതിയതാക്കാം."
+      }
+    },
+    de: {
+      title: "Moodify 2.0",
+      subtext: "Dein Gesicht erzählt die Geschichte deines Herzens.<br>Tippe unten, um deine Reise zu beginnen.",
+      start: "Emotionserkennung starten",
+      detect: "Erneut erkennen",
+      stop: "Musik stoppen",
+      assistant: {
+        happy: "Du strahlst heute! Lust auf einen fröhlichen Beat?",
+        sad: "Ich bin bei dir. Lass uns Frieden finden 💙",
+        angry: "Tief durchatmen. Lass uns den Sturm beruhigen.",
+        fear: "Mut bedeutet, trotz Angst zu handeln.",
+        surprise: "Wow! Damit habe ich nicht gerechnet!",
+        neutral: "Ganz entspannt... Sanfte Musik gefällig?",
+        disgust: "Lass uns diesen Moment reinigen."
+      }
+    },
+    fr: {
+      title: "Moodify 2.0",
+      subtext: "Ton visage révélera l’histoire de ton cœur.<br>Appuie ci-dessous pour commencer ton voyage émotionnel.",
+      start: "Démarrer la détection des émotions",
+      detect: "Détecter à nouveau",
+      stop: "Arrêter la musique",
+      assistant: {
+        happy: "Tu rayonnes aujourd’hui ! Un peu de musique joyeuse ?",
+        sad: "Je suis là pour toi. Trouvons la paix ensemble 💙",
+        angry: "Respire profondément. Apaisons la tempête.",
+        fear: "Le courage, c’est agir malgré la peur.",
+        surprise: "Oh ! Je ne m’y attendais pas non plus !",
+        neutral: "Restons calmes... Un fond musical doux ?",
+        disgust: "Purifions cet instant ensemble."
+      }
+    },
+    ja: {
+      title: "ムーディファイ 2.0",
+      subtext: "あなたの顔が心の物語を伝えます。<br>下をタップして感情の旅を始めましょう。",
+      start: "感情検出を開始",
+      detect: "もう一度検出",
+      stop: "音楽を停止",
+      assistant: {
+        happy: "今日は輝いていますね！楽しいビートはどう？",
+        sad: "私はあなたのそばにいます。一緒に平和を見つけましょう 💙",
+        angry: "深呼吸して。怒りを鎮めましょう。",
+        fear: "勇気とは、恐れながらも行動することです。",
+        surprise: "わお！私もびっくりしました！",
+        neutral: "落ち着いていますね...穏やかな音楽はどうですか？",
+        disgust: "この瞬間を浄化しましょう。"
+      }
+    },
+    zh: {
+      title: "情绪引擎 2.0",
+      subtext: "你的面部将揭示你内心的故事。<br>点击下面开始你的情绪之旅。",
+      start: "开始情绪识别",
+      detect: "再次检测",
+      stop: "停止音乐",
+      assistant: {
+        happy: "你今天光彩照人！来点开心的音乐吧？",
+        sad: "我在你身边。我们一起寻找内心的平静 💙",
+        angry: "深呼吸。让我们平息怒火。",
+        fear: "勇气不是没有恐惧，而是仍然前进。",
+        surprise: "哇哦！我也没想到！",
+        neutral: "保持冷静...要来点柔和的音乐吗？",
+        disgust: "让我们净化这一刻吧。"
+      }
+    },
+    es: {
+      title: "Moodify 2.0",
+      subtext: "Tu rostro revelará la historia de tu corazón.<br>Haz clic abajo para comenzar tu viaje emocional.",
+      start: "Iniciar detección de emociones",
+      detect: "Detectar de nuevo",
+      stop: "Detener música",
+      assistant: {
+        happy: "¡Estás radiante hoy! ¿Qué tal un ritmo alegre?",
+        sad: "Estoy contigo. Busquemos paz juntos 💙",
+        angry: "Respira hondo. Vamos a calmar la tormenta.",
+        fear: "El coraje no es la ausencia de miedo, es actuar a pesar de él.",
+        surprise: "¡Wow! ¡No me lo esperaba!",
+        neutral: "Relajado... ¿Quieres algo de música suave?",
+        disgust: "Purifiquemos este momento juntos."
+      }
+    },
+
+    };
+  
+    function updateUIText() {
+      const lang = getLangKey();
+      const t = translations[lang] || translations["en"];
+  
+      document.getElementById("mainTitle").innerHTML = t.title;
+      document.getElementById("subtext").innerHTML = t.subtext;
+      document.getElementById("startBtn").innerText = t.start;
+      document.getElementById("detectBtn").innerText = t.detect;
+      document.getElementById("stopBtn").innerText = t.stop;
+    }
+  
+    document.getElementById("languageSelect").addEventListener("change", updateUIText);
+  
+    function speakStory(story) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(story);
+      utter.rate = 1;
+      utter.pitch = 1;
+      utter.lang = getVoiceLang();
+      synth.cancel();
+      synth.speak(utter);
+    }
+  
+    function speakAssistant(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1;
+      utter.pitch = 1.1;
+      utter.lang = getVoiceLang();
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }
+  
+    function stopMusic() {
+      const audio = document.getElementById("player");
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    async function startMoodify() {
+    const emotionEl = document.getElementById("emotion");
+    const storyEl = document.getElementById("story");
+    const audio = document.getElementById("player");
+    const audioSource = document.getElementById("audioSource");
+    const assistantBox = document.getElementById("assistantBox");
+
+    const langKey = getLangKey();
+    const t = translations[langKey] || translations["en"];
+
+    emotionEl.innerText = "⏳ Detecting emotion... Please wait...";
+    storyEl.innerText = "";
+    assistantBox.style.display = "none";
+    stopMusic();
+
+    try {
+      const langParam = document.getElementById("languageSelect").value;
+      const response = await fetch(`/moodify?lang=${langParam}`);
+
+      if (!response.ok) throw new Error("Failed to fetch response from server.");
+
+      const data = await response.json();
+      const emotion = data.emotion.toLowerCase();
+      const story = data.story;
+
+      emotionEl.innerText = `🧠 Emotion Detected: ${emotion}`;
+      storyEl.innerText = `📖 Story: ${story}`;
+
+      changeBackgroundByEmotion(emotion);
+      speakStory(story);
+
+      const musicPath = `/static/music/${emotion}.mp3`;
+      audioSource.src = musicPath;
+      audio.load();
+      audio.play();
+
+      const assistantLine = t.assistant[emotion] || t.assistant["neutral"];
+      assistantBox.textContent = assistantLine;
+      assistantBox.style.display = "block";
+      speakAssistant(assistantLine);
+
+    } catch (error) {
+      emotionEl.innerText = "❌ Error detecting emotion.";
+      storyEl.innerText = error.message;
+      console.error("Fetch error:", error);
+    }
+  }
+
+  // Set default language UI on load
+  updateUIText();
+</script>
+</body>
+</html>
+  
